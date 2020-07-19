@@ -30,8 +30,8 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
     private final InternalLogger log = ClientLogger.getLog();
 
     @Override
-    public List<MessageQueue> allocate(String consumerGroup, String currentCID, List<MessageQueue> mqAll,
-        List<String> cidAll) {
+    public List<MessageQueue> allocate(String consumerGroup/*消费者组*/, String currentCID/*clientId*/, List<MessageQueue> mqAll/*消息队列集合*/,
+        List<String> cidAll/*消费者组里面的所有消费者的clientId*/) {
         if (currentCID == null || currentCID.length() < 1) {
             throw new IllegalArgumentException("currentCID is empty");
         }
@@ -43,6 +43,7 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
         }
 
         List<MessageQueue> result = new ArrayList<MessageQueue>();
+        //如果消费者组里的消费者不包含当前这个消费者
         if (!cidAll.contains(currentCID)) {
             log.info("[BUG] ConsumerGroup: {} The consumerId: {} not in cidAll: {}",
                 consumerGroup,
@@ -51,13 +52,18 @@ public class AllocateMessageQueueAveragely implements AllocateMessageQueueStrate
             return result;
         }
 
+        //当前消费者在消费者集合里面的位置
         int index = cidAll.indexOf(currentCID);
+        //队列数对消费者数取模
         int mod = mqAll.size() % cidAll.size();
+        //求当前消费者应该消费几个队列
         int averageSize =
             mqAll.size() <= cidAll.size() ? 1 : (mod > 0 && index < mod ? mqAll.size() / cidAll.size()
                 + 1 : mqAll.size() / cidAll.size());
+        //求当前消费者应该从哪个队列开始消费消息
         int startIndex = (mod > 0 && index < mod) ? index * averageSize : index * averageSize + mod;
         int range = Math.min(averageSize, mqAll.size() - startIndex);
+        //将当前消费者应该消费的队列一个一个放进返回结果列表
         for (int i = 0; i < range; i++) {
             result.add(mqAll.get((startIndex + i) % mqAll.size()));
         }

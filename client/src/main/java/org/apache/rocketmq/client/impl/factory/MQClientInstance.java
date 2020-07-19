@@ -233,15 +233,15 @@ public class MQClientInstance {
                     if (null == this.clientConfig.getNamesrvAddr()) {
                         this.mQClientAPIImpl.fetchNameServerAddr();
                     }
-                    // Start request-response channel
+                    // Start request-response channel，启动mQClient网络请求响应相关的接口，依赖netty
                     this.mQClientAPIImpl.start();
-                    // Start various schedule tasks
+                    // Start various schedule tasks，启动定时任务，心跳等
                     this.startScheduledTask();
-                    // Start pull service
+                    // Start pull service，启动拉取消息服务
                     this.pullMessageService.start();
-                    // Start rebalance service
+                    // Start rebalance service，启动消息负载均衡服务
                     this.rebalanceService.start();
-                    // Start push service
+                    // Start push service，启动消息发送者
                     this.defaultMQProducer.getDefaultMQProducerImpl().start(false);
                     log.info("the client factory [{}] start OK", this.clientId);
                     this.serviceState = ServiceState.RUNNING;
@@ -873,9 +873,10 @@ public class MQClientInstance {
         if (null == group || null == consumer) {
             return false;
         }
-
+        //将消费者组和消费者实例的对应关系保存到map
         MQConsumerInner prev = this.consumerTable.putIfAbsent(group, consumer);
         if (prev != null) {
+            //如果之前已经存在同样消费者组的消费者实例则注册失败
             log.warn("the consumer group[" + group + "] exist already.");
             return false;
         }

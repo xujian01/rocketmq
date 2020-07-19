@@ -18,6 +18,7 @@ package org.apache.rocketmq.example.quickstart;
 
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
@@ -31,7 +32,7 @@ public class Producer {
         /*
          * Instantiate with a producer group name.
          */
-        DefaultMQProducer producer = new DefaultMQProducer("please_rename_unique_group_name");
+        DefaultMQProducer producer = new DefaultMQProducer("producer_group");
 
         /*
          * Specify name server addresses.
@@ -44,13 +45,14 @@ public class Producer {
          * }
          * </pre>
          */
-
+        //最大重试次数
+//        producer.setRetryTimesWhenSendFailed(3);
         /*
          * Launch the instance.
          */
         producer.start();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
 
                 /*
@@ -65,6 +67,21 @@ public class Producer {
                  * Call send message to deliver message to one of brokers.
                  */
                 SendResult sendResult = producer.send(msg);
+                //单向发送，没有返回结果，不管成功与否
+//                producer.sendOneway(msg);
+                //异步+回调发送
+//                producer.send(msg, new SendCallback() {
+//
+//                    @Override
+//                    public void onSuccess(SendResult sendResult) {
+//                        System.out.println("发送成功");
+//                    }
+//
+//                    @Override
+//                    public void onException(Throwable e) {
+//                        System.out.println("发送异常");
+//                    }
+//                });
 
                 System.out.printf("%s%n", sendResult);
             } catch (Exception e) {

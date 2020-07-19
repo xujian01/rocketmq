@@ -24,6 +24,7 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
 /**
  * This example shows how to subscribe and consume messages using providing {@link DefaultMQPushConsumer}.
@@ -35,7 +36,7 @@ public class Consumer {
         /*
          * Instantiate with specified consumer group name.
          */
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("please_rename_unique_group_name_4");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("consumer_group");
 
         /*
          * Specify name server addresses.
@@ -48,12 +49,18 @@ public class Consumer {
          * }
          * </pre>
          */
+        //自定义instanceName
+        consumer.setInstanceName("XUJIAN_MACBOOK2222");
+        //设置消费模式：集群/广播
+//        consumer.setMessageModel(MessageModel.BROADCASTING);
 
         /*
          * Specify where to start in case the specified consumer group is a brand new one.
          */
-        consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
+        consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
 
+        //设置最大重试次数
+        consumer.setMaxReconsumeTimes(3);
         /*
          * Subscribe one more more topics to consume.
          */
@@ -64,10 +71,12 @@ public class Consumer {
          */
         consumer.registerMessageListener(new MessageListenerConcurrently() {
 
+            //注意到这里的msgs参数是个list，size>=1，可以批量消费，通过设置consumeMessageBatchMaxSize参数
             @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
                 ConsumeConcurrentlyContext context) {
                 System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), msgs);
+                System.out.printf("msgBody: %s %n",new String(msgs.get(0).getBody()));
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }
         });

@@ -62,6 +62,10 @@ public class ClientConfig {
 
     private LanguageCode language = LanguageCode.JAVA;
 
+    /**
+     * clientId格式：ip+@+instanceName[+@unitName]，通常你会看到形如127.0.0.1@32531这样的clientId
+     * @return
+     */
     public String buildMQClientId() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.getClientIP());
@@ -92,6 +96,9 @@ public class ClientConfig {
         this.instanceName = instanceName;
     }
 
+    /**
+     * 如果是集群消费模式，如果instanceName是默认值（即没有自定义该属性）则通过进程id来替换该属性
+     */
     public void changeInstanceNameToPID() {
         if (this.instanceName.equals("DEFAULT")) {
             this.instanceName = String.valueOf(UtilAll.getPid());
