@@ -550,6 +550,8 @@ public class MQClientInstance {
                         Long id = entry1.getKey();
                         String addr = entry1.getValue();
                         if (addr != null) {
+                            //如果没有消费者，那么只需要和master broker保持心跳即可
+                            //如果有消费者，则同事要和master和slaver broker保持心跳
                             if (consumerEmpty) {
                                 if (id != MixAll.MASTER_ID)
                                     continue;
